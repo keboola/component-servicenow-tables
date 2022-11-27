@@ -1,0 +1,5 @@
+keboola.component==1.3.5
+keboola.http-client
+keboola.csvwriter==1.0.1
+mock
+freezegun

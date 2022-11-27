@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "title": "ServiceNow table extractor configuration",
+  "required": [
+    "table"
+  ],
+  "properties": {
+    "table": {
+      "type": "string",
+      "title": "Table",
+      "description": "table to extract",
+      "propertyOrder": 1
+    },
+    "sysparm_query": {
+      "type": "string",
+      "title": "SysParm Query",
+      "description": "Query which will be sent along with get table request.",
+      "format": "password",
+      "propertyOrder": 2
+    },
+    "sysparm_fields": {
+      "type": "string",
+      "title": "SysParm Fields",
+      "description": "Using this parameter you can limit fetched fields.",
+      "propertyOrder": 3
+    }
+  }
+}

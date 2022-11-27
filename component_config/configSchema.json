@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "title": "ServiceNow table extractor configuration",
+  "required": [
+    "user",
+    "#password"
+  ],
+  "properties": {
+    "user": {
+      "type": "string",
+      "title": "Username",
+      "propertyOrder": 1
+    },
+    "#password": {
+      "type": "string",
+      "title": "Password",
+      "format": "password",
+      "propertyOrder": 2
+    },
+    "server": {
+      "type": "string",
+      "title": "Server",
+      "propertyOrder": 3
+    }
+  }
+}
