@@ -57,7 +57,7 @@ class Component(ComponentBase):
         client = ServiceNowClient(user=user, password=password, server=server)
         table_def = self.create_out_table_definition(f'{table}.csv', incremental=True, primary_key=['sys_id'])
         client.fetch_table(table=table, sysparm_query=sysparm_query, sysparm_fields=sysparm_fields, table_def=table_def)
-        self.write_manifest(table)
+        self.write_manifest(table_def)
 
 
 """
