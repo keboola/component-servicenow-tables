@@ -56,7 +56,7 @@ class ServiceNowClient:
                 if len(result) < self.limit:
                     has_more = False
 
-                logging.info(f"Processed records: {sysparm_offset+len(result)}")
+                logging.info(f"Table progress: {table} - {sysparm_offset+len(result)}/{total_count}")
                 sysparm_offset += self.limit
 
             wr.writeheader()
