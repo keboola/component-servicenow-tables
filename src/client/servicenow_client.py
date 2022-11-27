@@ -61,5 +61,3 @@ class ServiceNowClient:
 
             wr.writeheader()
             logging.info(f"Done fetching of table {table}")
-
-
