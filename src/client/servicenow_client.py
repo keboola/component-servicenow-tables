@@ -17,7 +17,7 @@ class ServiceNowClientError(Exception):
 class ServiceNowClient:
     def __init__(self, user, password, server, threads):
         self.server = server
-        self.limit = 200
+        self.limit = 300
         self.threads = threads
 
         default_header = {
@@ -37,7 +37,7 @@ class ServiceNowClient:
         self.stats_client = HttpClient(stats_url, default_http_header=default_header, auth=(user, password))
         self.fieldnames_list = []
 
-    @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=5)
+    @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=10)
     def fetch_page(self, table, params, table_def, offset):
         filename = table+str(offset)
         path = os.path.join(table_def.full_path, filename)
