@@ -68,7 +68,7 @@ class Component(ComponentBase):
 
         client.fetch_table(table=table, sysparm_query=sysparm_query, sysparm_fields=sysparm_fields, table_def=table_def)
         if not client.fieldnames_ok():
-            raise UserException(f"There was a problem with fieldnames. Component is unable to save data.")
+            raise UserException("There was a problem with fieldnames. Component is unable to save data.")
         self.write_manifest(table_def)
 
 
