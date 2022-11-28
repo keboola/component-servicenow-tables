@@ -22,7 +22,7 @@ KEY_INCREMENT = 'increment'
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
-REQUIRED_PARAMETERS = [KEY_USER, KEY_SERVER, KEY_TABLE, KEY_INCREMENT]
+REQUIRED_PARAMETERS = [KEY_USER, KEY_SERVER, KEY_TABLE]
 REQUIRED_IMAGE_PARS = []
 
 

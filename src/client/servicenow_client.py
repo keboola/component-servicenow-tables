@@ -47,7 +47,7 @@ class ServiceNowClient:
             try:
                 r.raise_for_status()
             except HTTPError as e:
-                raise ServiceNowClientError(f"Unable to fetch data for table {table}") from e
+                raise ServiceNowClientError(f"Unable to fetch data for table {table} with error {e}") from e
 
             total_count = r.headers.get("X-Total-Count")
 
