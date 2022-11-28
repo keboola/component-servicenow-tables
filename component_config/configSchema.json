@@ -21,6 +21,12 @@
       "type": "string",
       "title": "Server",
       "propertyOrder": 3
+    },
+    "threads": {
+      "type": "integer",
+      "title": "Threads",
+      "threads": "optional - number of threads to use to fetch data",
+      "propertyOrder": 4
     }
   }
 }
