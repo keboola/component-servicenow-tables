@@ -1,5 +1,5 @@
 from keboola.http_client import HttpClient
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, JSONDecodeError
 import logging
 from keboola.csvwriter import ElasticDictWriter
 from concurrent.futures import ThreadPoolExecutor
@@ -7,6 +7,7 @@ from concurrent.futures import as_completed
 from functools import partial
 import math
 import os
+import backoff as backoff
 
 
 class ServiceNowClientError(Exception):
@@ -36,6 +37,7 @@ class ServiceNowClient:
         self.stats_client = HttpClient(stats_url, default_http_header=default_header, auth=(user, password))
         self.fieldnames_list = []
 
+    @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=5)
     def fetch_page(self, table, params, table_def, offset):
         filename = table+str(offset)
         path = os.path.join(table_def.full_path, filename)
@@ -51,12 +53,17 @@ class ServiceNowClient:
 
             total_count = r.headers.get("X-Total-Count")
 
-            result = r.json().get("result")
+            try:
+                result = r.json().get("result")
+            except JSONDecodeError as e:
+                raise ServiceNowClientError(f"unable to parse response data with error: {e}") from e
+
             wr.writerows(result)
             self.fieldnames_list.append(wr.fieldnames)
 
         logging.info(f"Table progress: {table} - {offset + len(result)}/{total_count}")
 
+    @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=5)
     def get_table_stats(self, table, sysparm_query, sysparm_fields):
         params = {}
         if sysparm_query:
@@ -65,8 +72,18 @@ class ServiceNowClient:
             params["sysparm_fields"] = sysparm_fields
         params["sysparm_count"] = True
 
-        r = self.stats_client.get_raw(table, params=params)
-        return r.json()["result"]["stats"]["count"]
+        try:
+            r = self.stats_client.get_raw(table, params=params)
+            r.raise_for_status()
+        except HTTPError as e:
+            raise ServiceNowClientError(f"Unable to fetch rows count for table {table} with error {e}") from e
+
+        try:
+            result = r.json().get("result")
+        except JSONDecodeError as e:
+            raise ServiceNowClientError(f"unable to parse response data with error: {e}") from e
+
+        return result["stats"]["count"]
 
     def fetch_table(self, table, sysparm_query, sysparm_fields, table_def):
         row_count = self.get_table_stats(table, sysparm_query, sysparm_fields)
