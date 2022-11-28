@@ -17,7 +17,7 @@ class ServiceNowClientError(Exception):
 class ServiceNowClient:
     def __init__(self, user, password, server, threads):
         self.server = server
-        self.limit = 500
+        self.limit = 200
         self.threads = threads
 
         default_header = {
