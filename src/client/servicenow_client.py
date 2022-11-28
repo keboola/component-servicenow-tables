@@ -105,3 +105,6 @@ class ServiceNowClient:
         except StopIteration:
             return True
         return all(first == x for x in iterator)
+
+    def get_fieldnames(self) -> list:
+        return self.fieldnames_list[0]
