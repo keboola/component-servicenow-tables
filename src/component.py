@@ -18,10 +18,11 @@ KEY_TABLE = 'table'
 KEY_SYSPARM_QUERY = 'sysparm_query'
 KEY_SYSPARM_FIELDS = 'sysparm_fields'
 KEY_THREADS = 'threads'
+KEY_INCREMENT = 'increment'
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
-REQUIRED_PARAMETERS = [KEY_USER, KEY_SERVER, KEY_TABLE]
+REQUIRED_PARAMETERS = [KEY_USER, KEY_SERVER, KEY_TABLE, KEY_INCREMENT]
 REQUIRED_IMAGE_PARS = []
 
 
@@ -55,6 +56,9 @@ class Component(ComponentBase):
         server = params.get(KEY_SERVER)
         sysparm_query = params.get(KEY_SYSPARM_QUERY)
         sysparm_fields = params.get(KEY_SYSPARM_FIELDS)
+        increment = params.get(KEY_INCREMENT)
+        if not increment:
+            increment = False
         threads = params.get(KEY_THREADS)
         if not threads:
             threads = 8
@@ -62,7 +66,7 @@ class Component(ComponentBase):
 
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
-        table_def = self.create_out_table_definition(f'{table}.csv', incremental=True, primary_key=['sys_id'])
+        table_def = self.create_out_table_definition(f'{table}.csv', incremental=increment, primary_key=['sys_id'])
         if not os.path.exists(table_def.full_path):
             os.makedirs(table_def.full_path)
 
