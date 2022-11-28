@@ -56,12 +56,15 @@ class ServiceNowClient:
             try:
                 result = r.json().get("result")
             except JSONDecodeError as e:
-                raise ServiceNowClientError(f"unable to parse response data with error: {e}") from e
+                raise ServiceNowClientError(f"Unable to parse response data with error: {e}") from e
+
+            if isinstance(result, str):
+                raise ServiceNowClientError(f"Result is str: {result}")
 
             wr.writerows(result)
             self.fieldnames_list.append(wr.fieldnames)
 
-        logging.info(f"Table progress: {table} - {offset + len(result)}/{total_count}")
+        return f"Table progress: {table} - {offset + len(result)}/{total_count}"
 
     @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=5)
     def get_table_stats(self, table, sysparm_query, sysparm_fields):
@@ -108,11 +111,9 @@ class ServiceNowClient:
             futures = {
                 executor.submit(func, offset): offset for offset in offset_list
             }
-            for future in as_completed(futures):
-                if future.exception():
-                    raise ServiceNowClientError(f"Fetching failed for chunk {futures[future]}"
-                                                f", reason: {future.exception()}.")
 
+            for future in as_completed(futures):
+                logging.info(future.result())
         logging.info(f"Done fetching of table {table}")
 
     def fieldnames_ok(self) -> bool:
