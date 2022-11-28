@@ -58,6 +58,7 @@ class Component(ComponentBase):
         threads = params.get(KEY_THREADS)
         if not threads:
             threads = 8
+        logging.info(f"Component will use {str(threads)} threads.")
 
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
