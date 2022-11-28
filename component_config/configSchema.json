@@ -25,6 +25,7 @@
     "threads": {
       "type": "integer",
       "title": "Threads",
+      "default": 8,
       "threads": "optional - number of threads to use to fetch data",
       "propertyOrder": 4
     }
