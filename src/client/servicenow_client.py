@@ -1,7 +1,13 @@
 from keboola.http_client import HttpClient
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, JSONDecodeError
 import logging
 from keboola.csvwriter import ElasticDictWriter
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
+from functools import partial
+import math
+import os
+import backoff as backoff
 
 
 class ServiceNowClientError(Exception):
@@ -9,55 +15,117 @@ class ServiceNowClientError(Exception):
 
 
 class ServiceNowClient:
-    def __init__(self, user, password, server):
+    def __init__(self, user, password, server, threads):
         self.server = server
-        self.limit = 500
+        self.limit = 300
+        self.threads = threads
 
         default_header = {
             'Accept': 'application/json'
         }
 
-        default_params = {
+        tc_default_params = {
             'sysparm_limit': self.limit
         }
 
-        self.client = HttpClient(server, default_http_header=default_header, auth=(user, password),
-                                 default_params=default_params)
+        table_url = server + "/api/now/v2/table/"
+        stats_url = server + "/api/now/stats/"
 
-    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def):
+        self.table_client = HttpClient(table_url, default_http_header=default_header, auth=(user, password),
+                                       default_params=tc_default_params)
+
+        self.stats_client = HttpClient(stats_url, default_http_header=default_header, auth=(user, password))
+        self.fieldnames_list = []
+
+    @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=10)
+    def fetch_page(self, table, params, table_def, offset):
+        filename = table+str(offset)
+        path = os.path.join(table_def.full_path, filename)
+
+        with ElasticDictWriter(path, []) as wr:
+            params["sysparm_offset"] = offset
+            r = self.table_client.get_raw(table, params=params)
+
+            try:
+                r.raise_for_status()
+            except HTTPError as e:
+                raise ServiceNowClientError(f"Unable to fetch data for table {table} with error {e}") from e
+
+            total_count = r.headers.get("X-Total-Count")
+
+            try:
+                result = r.json().get("result")
+            except JSONDecodeError as e:
+                raise ServiceNowClientError(f"Unable to parse response data with error: {e}") from e
+
+            if isinstance(result, str):
+                raise ServiceNowClientError(f"Result is str: {result}")
+
+            try:
+                wr.writerows(result)
+            except AttributeError as e:
+                raise ServiceNowClientError(f"Cannot write data to file: {e}")
+            self.fieldnames_list.append(wr.fieldnames)
+
+        return f"Table progress: {table} - {offset + len(result)}/{total_count}"
+
+    @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=5)
+    def get_table_stats(self, table, sysparm_query, sysparm_fields):
         params = {}
         if sysparm_query:
             params["sysparm_query"] = sysparm_query
         if sysparm_fields:
             params["sysparm_fields"] = sysparm_fields
+        params["sysparm_count"] = True
 
+        try:
+            r = self.stats_client.get_raw(table, params=params)
+            r.raise_for_status()
+        except HTTPError as e:
+            raise ServiceNowClientError(f"Unable to fetch rows count for table {table} with error {e}") from e
+
+        try:
+            result = r.json().get("result")
+        except JSONDecodeError as e:
+            raise ServiceNowClientError(f"unable to parse response data with error: {e}") from e
+
+        return result["stats"]["count"]
+
+    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def):
+        row_count = self.get_table_stats(table, sysparm_query, sysparm_fields)
+        iterations = math.ceil(int(row_count)/self.limit)
+
+        offset_list = []
+
+        params = {}
+        if sysparm_query:
+            params["sysparm_query"] = sysparm_query
+        if sysparm_fields:
+            params["sysparm_fields"] = sysparm_fields
         sysparm_offset = 0
 
-        first_request = True
-        has_more = True
-        with ElasticDictWriter(table_def.full_path, []) as wr:
-            while has_more:
-                params["sysparm_offset"] = sysparm_offset
-                r = self.client.get_raw(table, params=params)
+        for _ in range(iterations):
+            offset_list.append(sysparm_offset)
+            sysparm_offset += self.limit
 
-                try:
-                    r.raise_for_status()
-                except HTTPError as e:
-                    raise ServiceNowClientError(f"Unable to fetch data for table {table}") from e
+        func = partial(self.fetch_page, table, params, table_def)
 
-                if first_request:
-                    total_count = r.headers.get("X-Total-Count")
-                    logging.info(f"Component will fetch {total_count} rows for table {table}.")
-                    first_request = False
+        with ThreadPoolExecutor(max_workers=self.threads) as executor:
+            futures = {
+                executor.submit(func, offset): offset for offset in offset_list
+            }
 
-                result = r.json().get("result")
-                wr.writerows(result)
+            for future in as_completed(futures):
+                logging.info(future.result())
+        logging.info(f"Done fetching of table {table}")
 
-                if len(result) < self.limit:
-                    has_more = False
+    def fieldnames_ok(self) -> bool:
+        iterator = iter(self.fieldnames_list)
+        try:
+            first = next(iterator)
+        except StopIteration:
+            return True
+        return all(first == x for x in iterator)
 
-                logging.info(f"Table progress: {table} - {sysparm_offset+len(result)}/{total_count}")
-                sysparm_offset += self.limit
-
-            wr.writeheader()
-            logging.info(f"Done fetching of table {table}")
+    def get_fieldnames(self) -> list:
+        return self.fieldnames_list[0]

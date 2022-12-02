@@ -3,3 +3,4 @@ keboola.http-client
 keboola.csvwriter==1.0.1
 mock
 freezegun
+backoff
