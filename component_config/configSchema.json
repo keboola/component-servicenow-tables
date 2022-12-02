@@ -26,8 +26,15 @@
       "type": "integer",
       "title": "Threads",
       "default": 8,
-      "threads": "optional - number of threads to use to fetch data",
+      "description": "optional - number of threads to use to fetch data",
       "propertyOrder": 4
+    },
+    "output_bucket": {
+      "type": "string",
+      "title": "Output bucket",
+      "default": "kds-team.ex-servicenow-tables",
+      "description": "The name of the bucket that results will be stored to.",
+      "propertyOrder": 5
     }
   }
 }

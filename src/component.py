@@ -19,6 +19,7 @@ KEY_SYSPARM_QUERY = 'sysparm_query'
 KEY_SYSPARM_FIELDS = 'sysparm_fields'
 KEY_THREADS = 'threads'
 KEY_INCREMENT = 'increment'
+KEY_BUCKET = 'output_bucket'
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
@@ -59,14 +60,21 @@ class Component(ComponentBase):
         increment = params.get(KEY_INCREMENT)
         if not increment:
             increment = False
+
         threads = params.get(KEY_THREADS)
         if not threads:
             threads = 8
+
+        output_bucket = params.get(KEY_BUCKET)
+        if not output_bucket:
+            output_bucket = "kds-team.ex-servicenow-tables"
+
         logging.info(f"Component will use {str(threads)} threads.")
 
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
-        table_def = self.create_out_table_definition(f'{table}.csv', incremental=increment, primary_key=['sys_id'])
+        table_def = self.create_out_table_definition(f'in.{output_bucket}.{table}.csv', incremental=increment,
+                                                     primary_key=['sys_id'])
         if not os.path.exists(table_def.full_path):
             os.makedirs(table_def.full_path)
 
