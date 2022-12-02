@@ -73,7 +73,8 @@ class Component(ComponentBase):
 
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
-        table_def = self.create_out_table_definition(f'in.{output_bucket}.{table}.csv', incremental=increment, primary_key=['sys_id'])
+        table_def = self.create_out_table_definition(f'in.{output_bucket}.{table}.csv', incremental=increment,
+                                                     primary_key=['sys_id'])
         if not os.path.exists(table_def.full_path):
             os.makedirs(table_def.full_path)
 
