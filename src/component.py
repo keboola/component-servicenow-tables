@@ -42,12 +42,10 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
-        '''
+        """
         Main execution code
-        '''
+        """
 
-        # ####### EXAMPLE TO REMOVE
-        # check for missing configuration parameters
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         params = self.configuration.parameters
 
@@ -73,7 +71,7 @@ class Component(ComponentBase):
 
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
-        table_def = self.create_out_table_definition(f'{table}.csv', destination=f'{output_bucket}.{table}.csv',
+        table_def = self.create_out_table_definition(f'{table}', destination=f'in.c-{output_bucket}.{table}',
                                                      incremental=increment, primary_key=['sys_id'])
         if not os.path.exists(table_def.full_path):
             os.makedirs(table_def.full_path)
