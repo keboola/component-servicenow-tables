@@ -1,11 +1,6 @@
 
 =============
 
-Testing functional sample extractor for purposes of the python component template. 
-
-Testing functional sample extractor for purposes of the python component template. 
-Implements partial Hubspot extractor using the public sandbox token.
-
 **Table of contents:**
 
 [TOC]
@@ -36,7 +31,7 @@ Configuration
  - Output bucket (output_bucket) - [OPT] Name of the output bucket. If the bucket with specified name does not exit, it will be created automatically.
 
 
-## ServiceNow table extractor configuration
+## ServiceNow table extractor row configuration
  - Table (table) - [REQ] Name of the table to be extracted
  - SysParm Query (sysparm_query) - [OPT] Query which will be sent along with get table request.
 For more information about querying please refer to [Table API documentation](https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_TableAPI#table-GET).
