@@ -1,1 +1,1 @@
-Testing functional sample extractor for purposes of the python component template. 
+ServiceNow is a cloud-based workflow automation platform that enables enterprise organizations to improve operational efficiencies by streamlining and automating routine work tasks.
