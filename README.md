@@ -49,7 +49,7 @@ Output
 ======
 
 Tables with columns specified in `sysparm_fields` and rows filtered by `sysparm_query`.
-Tables are loaded with column `sys_id` used as primary key.
+Tables are loaded with column `sys_id` used as primary key into bucket specified by `output_bucket` parameter.
 
 Development
 -----------
