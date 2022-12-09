@@ -8,17 +8,7 @@
 Functionality notes
 ===================
 
-Prerequisites
-=============
-
-Get the API token, register application, etc.
-
-
-Supported endpoints
-===================
-
-If you need more endpoints, please submit your request to
-[ideas.keboola.com](https://ideas.keboola.com/)
+This component extracts data from ServiceNow using [Table API endpoint](https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_TableAPI#table-GET). 
 
 Configuration
 =============
@@ -30,14 +20,12 @@ Configuration
  - Threads (threads) - [OPT] integer that specifies number of threads used to call ServiceNow API for a single row. Keep in mind that setting this to a high number and combining with parallel row execution can lead to overload of the source system. This can further lead to API returning 5** status codes that will force the extractor to use backoff strategy leading to increased component run times. Default number of threads is 8
  - Output bucket (output_bucket) - [OPT] Name of the output bucket. If the bucket with specified name does not exit, it will be created automatically.
 
-
 ## ServiceNow table extractor row configuration
  - Table (table) - [REQ] Name of the table to be extracted
  - SysParm Query (sysparm_query) - [OPT] Query which will be sent along with get table request.
 For more information about querying please refer to [Table API documentation](https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_TableAPI#table-GET).
  - SysParm Fields (sysparm_fields) - [OPT] Using this parameter you can limit fetched fields. Please use comma separation.
  - Increment (increment) - [OPT] Use this parameter to define if you want to do incremental load.
-
 
 Sample Configuration
 =============
