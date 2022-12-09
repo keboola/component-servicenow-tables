@@ -10,6 +10,8 @@ Functionality notes
 
 This component extracts data from ServiceNow using [Table API endpoint](https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_TableAPI#table-GET). 
 
+You can use [ServiceNow REST API Explorer](https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/task/t_GetStartedAccessExplorer.html) to try out API calls before setting up this component."
+
 Configuration
 =============
 

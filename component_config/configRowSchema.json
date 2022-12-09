@@ -14,7 +14,7 @@
     "sysparm_query": {
       "type": "string",
       "title": "SysParm Query",
-      "description": "Query which will be sent along with get table request.",
+      "description": "Query which will be sent along with get table request. You can use [REST API Explorer](https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/task/t_GetStartedAccessExplorer.html) to try out API calls before setting up this component.",
       "propertyOrder": 2
     },
     "sysparm_fields": {
