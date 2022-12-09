@@ -28,7 +28,8 @@ Optional parameters:
 - SysParm Fields (`sysparm_fields`) - Use this parameter to limit the number of columns.
 You must use a comma separated list of values;
 - Increment (`increment`) - This parameter specifies whether to store data to Keboola storage Incrementally
-or whether to use full load (Table will be truncated first before importing new data);
+or whether to use full load (Table will be truncated first before importing new data). Default is false (Full load).
+False is also used if this parameter is not specified at all.;
 
 #### Output
 
