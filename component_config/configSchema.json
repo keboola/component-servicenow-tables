@@ -20,6 +20,7 @@
     "server": {
       "type": "string",
       "title": "Server",
+      "description": "server url",
       "propertyOrder": 3
     },
     "threads": {

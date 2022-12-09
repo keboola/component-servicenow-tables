@@ -8,7 +8,7 @@
     "table": {
       "type": "string",
       "title": "Table",
-      "description": "table to extract",
+      "description": "Name of the table to be extracted",
       "propertyOrder": 1
     },
     "sysparm_query": {
@@ -20,7 +20,7 @@
     "sysparm_fields": {
       "type": "string",
       "title": "SysParm Fields",
-      "description": "Using this parameter you can limit fetched fields.",
+      "description": "Using this parameter you can limit fetched fields. Please use comma separation.",
       "propertyOrder": 3
     },
     "increment": {
