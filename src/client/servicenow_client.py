@@ -130,6 +130,6 @@ class ServiceNowClient:
     def get_fieldnames(self) -> list:
         try:
             fieldnames = self.fieldnames_list[0]
-        except IndexError as e:
+        except IndexError:
             fieldnames = []
         return fieldnames
