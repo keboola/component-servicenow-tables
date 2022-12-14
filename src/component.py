@@ -76,12 +76,21 @@ class Component(ComponentBase):
         if not os.path.exists(table_def.full_path):
             os.makedirs(table_def.full_path)
 
-        client.fetch_table(table=table, sysparm_query=sysparm_query, sysparm_fields=sysparm_fields, table_def=table_def)
-        if not client.fieldnames_ok():
-            raise UserException("There was a problem with fieldnames. Component is unable to save data.")
+        fetching_done = client.fetch_table(table=table,
+                                           sysparm_query=sysparm_query,
+                                           sysparm_fields=sysparm_fields,
+                                           table_def=table_def)
+        if fetching_done:
+            if not client.fieldnames_ok():
+                raise UserException("There was a problem with fieldnames. Component is unable to save data.")
 
-        table_def.columns = client.get_fieldnames()
-        self.write_manifest(table_def)
+            try:
+                table_def.columns = client.get_fieldnames()
+            except ServiceNowClientError as e:
+                raise UserException("No records were fetched.") from e
+            self.write_manifest(table_def)
+        else:
+            os.rmdir(table_def.full_path)
 
 
 """

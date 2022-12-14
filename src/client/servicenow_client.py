@@ -91,8 +91,16 @@ class ServiceNowClient:
 
         return result["stats"]["count"]
 
-    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def):
+    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def) -> bool:
+        """
+        Returns True if fetching was successful, otherwise returns False. This is to avoid mapping errors in Keboola
+        storage.
+        """
         row_count = self.get_table_stats(table, sysparm_query, sysparm_fields)
+        if int(row_count) == 0:
+            logging.warning(f"API returned no results for table {table}, with query {sysparm_query}.")
+            return False
+
         iterations = math.ceil(int(row_count)/self.limit)
 
         offset_list = []
@@ -118,6 +126,7 @@ class ServiceNowClient:
             for future in as_completed(futures):
                 logging.info(future.result())
         logging.info(f"Done fetching of table {table}")
+        return True
 
     def fieldnames_ok(self) -> bool:
         iterator = iter(self.fieldnames_list)
@@ -130,6 +139,6 @@ class ServiceNowClient:
     def get_fieldnames(self) -> list:
         try:
             fieldnames = self.fieldnames_list[0]
-        except IndexError:
-            fieldnames = []
+        except IndexError as e:
+            raise ServiceNowClientError("No records were fetched.") from e
         return fieldnames
