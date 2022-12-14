@@ -128,4 +128,8 @@ class ServiceNowClient:
         return all(first == x for x in iterator)
 
     def get_fieldnames(self) -> list:
-        return self.fieldnames_list[0]
+        try:
+            fieldnames = self.fieldnames_list[0]
+        except IndexError as e:
+            fieldnames = []
+        return fieldnames
