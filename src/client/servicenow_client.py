@@ -156,4 +156,3 @@ class ServiceNowClient:
                     raise Exception(f"Bad File: {file.path}")
             wr.writeheader()
         return True
-
