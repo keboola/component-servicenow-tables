@@ -71,23 +71,19 @@ class Component(ComponentBase):
 
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
-        table_def = self.create_out_table_definition(f'{table}', destination=f'in.c-{output_bucket}.{table}',
+        table_def = self.create_out_table_definition(table, destination=f'in.c-{output_bucket}.{table}',
                                                      incremental=increment, primary_key=['sys_id'])
-        if not os.path.exists(table_def.full_path):
-            os.makedirs(table_def.full_path)
+
+        temp_folder = os.path.join(self.data_folder_path, "temp")
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
 
         fetching_done = client.fetch_table(table=table,
                                            sysparm_query=sysparm_query,
                                            sysparm_fields=sysparm_fields,
-                                           table_def=table_def)
+                                           table_def=table_def,
+                                           temp_folder=temp_folder)
         if fetching_done:
-            if not client.fieldnames_ok():
-                raise UserException("There was a problem with fieldnames. Component is unable to save data.")
-
-            try:
-                table_def.columns = client.get_fieldnames()
-            except ServiceNowClientError as e:
-                raise UserException("No records were fetched.") from e
             self.write_manifest(table_def)
         else:
             os.rmdir(table_def.full_path)

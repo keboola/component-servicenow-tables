@@ -8,7 +8,8 @@ from functools import partial
 import math
 import os
 import backoff as backoff
-
+import json
+import uuid
 
 from collections.abc import MutableMapping
 
@@ -52,35 +53,38 @@ class ServiceNowClient:
         self.fieldnames_list = []
 
     @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=10)
-    def fetch_page(self, table, params, table_def, offset):
-        filename = table+str(offset)
-        path = os.path.join(table_def.full_path, filename)
+    def fetch_page(self, table, params, temp_folder, offset):
 
-        with ElasticDictWriter(path, []) as wr:
-            params["sysparm_offset"] = offset
-            r = self.table_client.get_raw(table, params=params)
+        params["sysparm_offset"] = offset
+        r = self.table_client.get_raw(table, params=params)
 
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            raise ServiceNowClientError(f"Unable to fetch data for table {table} with error {e}") from e
+
+        total_count = r.headers.get("X-Total-Count")
+
+        try:
+            result = r.json().get("result")
+        except JSONDecodeError as e:
+            raise ServiceNowClientError(f"Unable to parse response data with error: {e}") from e
+
+        if isinstance(result, str):
+            raise ServiceNowClientError(f"Result is str: {result}")
+
+        for row in result:
+            with open(os.path.join(temp_folder, f"{uuid.uuid1()}.json"), "w") as outfile:
+                json.dump(row, outfile)
+        """
+        for res in result:
             try:
-                r.raise_for_status()
-            except HTTPError as e:
-                raise ServiceNowClientError(f"Unable to fetch data for table {table} with error {e}") from e
-
-            total_count = r.headers.get("X-Total-Count")
-
-            try:
-                result = r.json().get("result")
-            except JSONDecodeError as e:
-                raise ServiceNowClientError(f"Unable to parse response data with error: {e}") from e
-
-            if isinstance(result, str):
-                raise ServiceNowClientError(f"Result is str: {result}")
-
-            for res in result:
-                try:
-                    wr.writerow(flatten(res))
-                except AttributeError as e:
-                    raise ServiceNowClientError(f"Cannot write data to file: {e}")
-            self.fieldnames_list.append(wr.fieldnames)
+                wr.writerow(flatten(res))
+            except AttributeError as e:
+                raise ServiceNowClientError(f"Cannot write data to file: {e}")
+        self.fieldnames_list.append(wr.fieldnames)
+        print(wr.fieldnames)
+        """
 
         return f"Table progress: {table} - {offset + len(result)}/{total_count}"
 
@@ -106,7 +110,7 @@ class ServiceNowClient:
 
         return result["stats"]["count"]
 
-    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def) -> bool:
+    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def, temp_folder) -> bool:
         """
         Returns True if fetching was successful, otherwise returns False. This is to avoid mapping errors in Keboola
         storage.
@@ -131,7 +135,7 @@ class ServiceNowClient:
             offset_list.append(sysparm_offset)
             sysparm_offset += self.limit
 
-        func = partial(self.fetch_page, table, params, table_def)
+        func = partial(self.fetch_page, table, params, temp_folder)
 
         with ThreadPoolExecutor(max_workers=self.threads) as executor:
             futures = {
@@ -141,19 +145,15 @@ class ServiceNowClient:
             for future in as_completed(futures):
                 logging.info(future.result())
         logging.info(f"Done fetching of table {table}")
+
+        with ElasticDictWriter(table_def.full_path, []) as wr:
+            for file in os.scandir(temp_folder):
+                try:
+                    with open(file.path) as json_file:
+                        data = json.load(json_file)
+                        wr.writerow(data)
+                except UnicodeDecodeError:
+                    raise Exception(f"Bad File: {file.path}")
+            wr.writeheader()
         return True
 
-    def fieldnames_ok(self) -> bool:
-        iterator = iter(self.fieldnames_list)
-        try:
-            first = next(iterator)
-        except StopIteration:
-            return True
-        return all(first == x for x in iterator)
-
-    def get_fieldnames(self) -> list:
-        try:
-            fieldnames = self.fieldnames_list[0]
-        except IndexError as e:
-            raise ServiceNowClientError("No records were fetched.") from e
-        return fieldnames
