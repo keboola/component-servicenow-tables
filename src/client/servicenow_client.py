@@ -10,6 +10,20 @@ import os
 import backoff as backoff
 
 
+from collections.abc import MutableMapping
+
+
+def flatten(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 class ServiceNowClientError(Exception):
     pass
 
@@ -61,10 +75,11 @@ class ServiceNowClient:
             if isinstance(result, str):
                 raise ServiceNowClientError(f"Result is str: {result}")
 
-            try:
-                wr.writerows(result)
-            except AttributeError as e:
-                raise ServiceNowClientError(f"Cannot write data to file: {e}")
+            for res in result:
+                try:
+                    wr.writerow(flatten(res))
+                except AttributeError as e:
+                    raise ServiceNowClientError(f"Cannot write data to file: {e}")
             self.fieldnames_list.append(wr.fieldnames)
 
         return f"Table progress: {table} - {offset + len(result)}/{total_count}"
