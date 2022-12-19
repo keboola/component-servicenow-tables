@@ -50,7 +50,6 @@ class ServiceNowClient:
                                        default_params=tc_default_params)
 
         self.stats_client = HttpClient(stats_url, default_http_header=default_header, auth=(user, password))
-        self.fieldnames_list = []
 
     @backoff.on_exception(backoff.expo, ServiceNowClientError, max_tries=10)
     def fetch_page(self, table, params, temp_folder, offset):
@@ -75,16 +74,7 @@ class ServiceNowClient:
 
         for row in result:
             with open(os.path.join(temp_folder, f"{uuid.uuid1()}.json"), "w") as outfile:
-                json.dump(row, outfile)
-        """
-        for res in result:
-            try:
-                wr.writerow(flatten(res))
-            except AttributeError as e:
-                raise ServiceNowClientError(f"Cannot write data to file: {e}")
-        self.fieldnames_list.append(wr.fieldnames)
-        print(wr.fieldnames)
-        """
+                json.dump(flatten(row), outfile)
 
         return f"Table progress: {table} - {offset + len(result)}/{total_count}"
 

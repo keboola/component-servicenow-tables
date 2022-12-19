@@ -4,6 +4,7 @@ Template Component main class.
 '''
 import logging
 import os
+import shutil
 
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
@@ -86,7 +87,8 @@ class Component(ComponentBase):
         if fetching_done:
             self.write_manifest(table_def)
         else:
-            os.rmdir(table_def.full_path)
+            shutil.rmtree(table_def.full_path)
+        shutil.rmtree(temp_folder)
 
 
 """
