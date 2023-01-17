@@ -16,9 +16,9 @@ Configuration
 =============
 
 ## ServiceNow table extractor configuration
- - Username (user) - [REQ] a username used to log in to ServiceNow
- - Password (#password) - [REQ] a password associated with username
- - Server (server) - [OPT] server url that should look like "https://kebooladev.service-now.com"
+ - Username (user) - [REQ] username used to log in to ServiceNow
+ - Password (#password) - [REQ] password associated with username
+ - Server (server) - [REQ] server url that should look like "https://kebooladev.service-now.com"
  - Threads (threads) - [OPT] integer that specifies number of threads used to call ServiceNow API for a single row. Keep in mind that setting this to a high number and combining with parallel row execution can lead to overload of the source system. This can further lead to API returning 5** status codes that will force the extractor to use backoff strategy leading to increased component run times. Default number of threads is 8
  - Output bucket (output_bucket) - [OPT] Name of the output bucket. If the bucket with specified name does not exit, it will be created automatically.
 
