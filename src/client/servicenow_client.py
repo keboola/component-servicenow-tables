@@ -29,6 +29,10 @@ class ServiceNowClientError(Exception):
     pass
 
 
+class ServiceNowCredentialsError(Exception):
+    pass
+
+
 class ServiceNowClient:
     def __init__(self, user, password, server, threads):
         self.server = server
@@ -105,12 +109,16 @@ class ServiceNowClient:
         Returns True if fetching was successful, otherwise returns False. This is to avoid mapping errors in Keboola
         storage.
         """
-        row_count = self.get_table_stats(table, sysparm_query, sysparm_fields)
+        try:
+            row_count = self.get_table_stats(table, sysparm_query, sysparm_fields)
+        except ServiceNowClientError as e:
+            raise ServiceNowCredentialsError("Cannot get table stats. Please check your credentials.") from e
+
         if int(row_count) == 0:
             logging.warning(f"API returned no results for table {table}, with query {sysparm_query}.")
             return False
 
-        iterations = math.ceil(int(row_count)/self.limit)
+        iterations = math.ceil(int(row_count) / self.limit)
 
         offset_list = []
 

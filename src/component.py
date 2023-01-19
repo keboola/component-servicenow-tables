@@ -9,7 +9,7 @@ import shutil
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
-from client.servicenow_client import ServiceNowClient, ServiceNowClientError # noqa
+from client.servicenow_client import ServiceNowClient, ServiceNowClientError, ServiceNowCredentialsError  # noqa
 
 # configuration variables
 KEY_USER = 'user'
@@ -79,11 +79,15 @@ class Component(ComponentBase):
         if not os.path.exists(temp_folder):
             os.makedirs(temp_folder)
 
-        fetching_done = client.fetch_table(table=table,
-                                           sysparm_query=sysparm_query,
-                                           sysparm_fields=sysparm_fields,
-                                           table_def=table_def,
-                                           temp_folder=temp_folder)
+        try:
+            fetching_done = client.fetch_table(table=table,
+                                               sysparm_query=sysparm_query,
+                                               sysparm_fields=sysparm_fields,
+                                               table_def=table_def,
+                                               temp_folder=temp_folder)
+        except ServiceNowCredentialsError as e:
+            raise UserException(e)
+
         if fetching_done:
             self.write_manifest(table_def)
         else:
