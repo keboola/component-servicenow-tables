@@ -125,6 +125,7 @@ class Component(ComponentBase):
                     for col in self.statefile_columns:
                         if col not in list(new_row.keys()):
                             new_row[col] = ""
+                    writer.writerow(new_row)
 
         os.replace(temp_file, input_file)
         self.stored_columns = non_empty_columns
