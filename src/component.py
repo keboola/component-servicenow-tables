@@ -1,7 +1,3 @@
-'''
-Template Component main class.
-
-'''
 import logging
 import os
 import shutil
@@ -29,46 +25,11 @@ REQUIRED_PARAMETERS = [KEY_USER, KEY_SERVER, KEY_TABLE]
 REQUIRED_IMAGE_PARS = []
 
 
-def remove_empty_columns(input_file):
-    with open(input_file, 'r') as file_in:
-        reader = csv.DictReader(file_in)
-        header = reader.fieldnames
-
-        empty_columns = header.copy()
-        for row in reader:
-            for col in header:
-                if col in empty_columns and row[col] != "":
-                    empty_columns.remove(col)
-
-        logging.info(f"The following empty columns will be removed: {empty_columns}")
-        non_empty_columns = [item for item in header if item not in empty_columns]
-
-    with open(input_file, 'r') as file_in:
-        reader = csv.DictReader(file_in)
-
-        temp_file = input_file + '.temp'
-        with open(temp_file, 'w', newline='') as file_out:
-            writer = csv.DictWriter(file_out, fieldnames=non_empty_columns)
-            writer.writeheader()
-            for row in reader:
-                writer.writerow({k: v for k, v in row.items() if k in non_empty_columns})
-
-    os.replace(temp_file, input_file)
-
-
 class Component(ComponentBase):
-    """
-        Extends base class for general Python components. Initializes the CommonInterface
-        and performs configuration validation.
-
-        For easier debugging the data folder is picked up by default from `../data` path,
-        relative to working directory.
-
-        If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
-    """
-
     def __init__(self):
         super().__init__()
+        self.statefile_columns = None
+        self.stored_columns = None
 
     def run(self):
         """
@@ -98,6 +59,9 @@ class Component(ComponentBase):
 
         logging.info(f"Component will use {str(threads)} threads.")
 
+        statefile = self.get_state_file()
+        self.statefile_columns = statefile.get("columns", [])
+
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
         table_def = self.create_out_table_definition(table, destination=f'in.c-{output_bucket}.{table}',
@@ -118,10 +82,52 @@ class Component(ComponentBase):
 
         if fetching_done:
             self.write_manifest(table_def)
-            remove_empty_columns(table_def.full_path)
+            self.handle_columns(table_def.full_path, self.statefile_columns)
         else:
             shutil.rmtree(table_def.full_path)
         shutil.rmtree(temp_folder)
+
+        self.write_state_file({"columns": self.stored_columns})
+
+    def handle_columns(self, input_file, old_columns):
+        """
+        Removes empty columns resulting from json flattening.
+        Also uses statefile to append columns that are stored in statefile so that Keboola mapping
+        does not fail.
+        :param input_file: definition object of handled file
+        :param old_columns: List of columns stored in previous run (loaded from statefile)
+        :return: None
+        """
+        logging.info("Removing empty rows")
+        with open(input_file, 'r') as file_in:
+            reader = csv.DictReader(file_in)
+            header = reader.fieldnames
+
+            empty_columns = header.copy()
+            for row in reader:
+                for col in header:
+                    if col in empty_columns and row[col] != "":
+                        empty_columns.remove(col)
+
+            logging.info(f"The following empty columns will be removed: {empty_columns}")
+            non_empty_columns = [item for item in header if item not in empty_columns]
+
+        with open(input_file, 'r') as file_in:
+            reader = csv.DictReader(file_in)
+
+            temp_file = input_file + '.temp'
+            with open(temp_file, 'w', newline='') as file_out:
+                fieldnames = list(set(non_empty_columns+old_columns))
+                writer = csv.DictWriter(file_out, fieldnames=fieldnames)
+                writer.writeheader()
+                for row in reader:
+                    new_row = {k: v for k, v in row.items() if k in non_empty_columns}
+                    for col in self.statefile_columns:
+                        if col not in list(new_row.keys()):
+                            new_row[col] = ""
+
+        os.replace(temp_file, input_file)
+        self.stored_columns = non_empty_columns
 
 
 """
