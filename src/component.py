@@ -93,7 +93,7 @@ class Component(ComponentBase):
         """
         Removes empty columns resulting from json flattening.
         Also uses statefile to append columns that are stored in statefile so that Keboola mapping
-        does not fail.
+        does not fail
         :param input_file: definition object of handled file
         :param old_columns: List of columns stored in previous run (loaded from statefile)
         :return: None
