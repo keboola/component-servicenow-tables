@@ -1,7 +1,4 @@
-from keboola.http_client import HttpClient
-from requests.exceptions import HTTPError, JSONDecodeError
 import logging
-from keboola.csvwriter import ElasticDictWriter
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 from functools import partial
@@ -10,8 +7,11 @@ import os
 import backoff as backoff
 import json
 import uuid
-
 from collections.abc import MutableMapping
+
+from keboola.http_client import HttpClient
+from requests.exceptions import HTTPError, JSONDecodeError
+from keboola.csvwriter import ElasticDictWriter
 
 
 def flatten(d, parent_key='', sep='_'):
@@ -151,6 +151,8 @@ class ServiceNowClient:
                         data = json.load(json_file)
                         wr.writerow(data)
                 except UnicodeDecodeError:
+                    raise Exception(f"Bad File: {file.path}")
+                except JSONDecodeError:
                     raise Exception(f"Bad File: {file.path}")
             wr.writeheader()
         return True

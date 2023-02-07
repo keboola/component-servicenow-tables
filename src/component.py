@@ -5,6 +5,7 @@ Template Component main class.
 import logging
 import os
 import shutil
+import csv
 
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
@@ -26,6 +27,34 @@ KEY_BUCKET = 'output_bucket'
 # component will fail with readable message on initialization.
 REQUIRED_PARAMETERS = [KEY_USER, KEY_SERVER, KEY_TABLE]
 REQUIRED_IMAGE_PARS = []
+
+
+def remove_empty_columns(input_file):
+    with open(input_file, 'r') as file_in:
+        reader = csv.DictReader(file_in)
+        header = reader.fieldnames
+
+        column_data = {col: [] for col in header}
+        for row in reader:
+            for col in header:
+                column_data[col].append(row[col])
+
+        non_empty_columns = [col for col in header if any(column_data[col])]
+
+        removed_columns = [col for col in header if col not in non_empty_columns]
+        logging.info(f"The following empty columns were removed: {removed_columns}")
+
+    with open(input_file, 'r') as file_in:
+        reader = csv.DictReader(file_in)
+
+        temp_file = input_file + '.temp'
+        with open(temp_file, 'w', newline='') as file_out:
+            writer = csv.DictWriter(file_out, fieldnames=non_empty_columns)
+            writer.writeheader()
+            for row in reader:
+                writer.writerow({k: v for k, v in row.items() if k in non_empty_columns})
+
+    os.replace(temp_file, input_file)
 
 
 class Component(ComponentBase):
@@ -90,6 +119,7 @@ class Component(ComponentBase):
 
         if fetching_done:
             self.write_manifest(table_def)
+            remove_empty_columns(table_def.full_path)
         else:
             shutil.rmtree(table_def.full_path)
         shutil.rmtree(temp_folder)
