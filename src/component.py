@@ -34,15 +34,14 @@ def remove_empty_columns(input_file):
         reader = csv.DictReader(file_in)
         header = reader.fieldnames
 
-        column_data = {col: [] for col in header}
+        empty_columns = header.copy()
         for row in reader:
             for col in header:
-                column_data[col].append(row[col])
+                if col in empty_columns and row[col] != "":
+                    empty_columns.remove(col)
 
-        non_empty_columns = [col for col in header if any(column_data[col])]
-
-        removed_columns = [col for col in header if col not in non_empty_columns]
-        logging.info(f"The following empty columns were removed: {removed_columns}")
+        logging.info(f"The following empty columns will be removed: {empty_columns}")
+        non_empty_columns = [item for item in header if item not in empty_columns]
 
     with open(input_file, 'r') as file_in:
         reader = csv.DictReader(file_in)
