@@ -9,6 +9,7 @@ import json
 import uuid
 from collections.abc import MutableMapping
 
+import requests.exceptions
 from keboola.http_client import HttpClient
 from requests.exceptions import HTTPError, JSONDecodeError
 from keboola.csvwriter import ElasticDictWriter
@@ -111,6 +112,8 @@ class ServiceNowClient:
         """
         try:
             row_count = self.get_table_stats(table, sysparm_query, sysparm_fields)
+        except requests.exceptions.MissingSchema as e:
+            raise ServiceNowClientError(e)
         except ServiceNowClientError as e:
             raise ServiceNowCredentialsError("Cannot get table stats. Please check your credentials.") from e
 
