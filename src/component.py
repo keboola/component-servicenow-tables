@@ -55,7 +55,7 @@ class Component(ComponentBase):
 
         output_bucket = params.get(KEY_BUCKET)
         if not output_bucket:
-            output_bucket = "kds-team.ex-servicenow-tables"
+            output_bucket = "ex-servicenow-tables"
 
         logging.info(f"Component will use {str(threads)} threads.")
 
