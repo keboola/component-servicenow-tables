@@ -84,7 +84,11 @@ class Component(ComponentBase):
             self.write_manifest(table_def)
             self.handle_columns(table_def.full_path, self.statefile_columns)
         else:
-            shutil.rmtree(table_def.full_path)
+            try:
+                shutil.rmtree(table_def.full_path)
+            except FileNotFoundError:
+                pass
+
         shutil.rmtree(temp_folder)
 
         self.write_state_file({"columns": self.stored_columns})
