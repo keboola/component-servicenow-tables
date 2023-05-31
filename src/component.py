@@ -91,7 +91,12 @@ class Component(ComponentBase):
 
         shutil.rmtree(temp_folder)
 
-        self.write_state_file({"columns": self.stored_columns})
+        if not self.stored_columns:
+            if self.statefile_columns:
+                logging.info("No new rows to be added. Re-Saving columns from statefile.")
+                self.write_state_file({"columns": self.statefile_columns})
+        else:
+            self.write_state_file({"columns": self.stored_columns})
 
     def handle_columns(self, input_file, old_columns):
         """
