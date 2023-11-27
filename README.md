@@ -27,7 +27,9 @@ Configuration
  - SysParm Query (sysparm_query) - [OPT] Query which will be sent along with get table request.
 For more information about querying please refer to [Table API documentation](https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_TableAPI#table-GET).
  - SysParm Fields (sysparm_fields) - [OPT] Using this parameter you can limit fetched fields. Please use comma separation.
+ - SysParm Display Value - [OPT] Determines the type of data returned, either the actual values from the database or the display values of the fields.
  - Increment (increment) - [OPT] Set this parameter to true if you want to do incremental load.
+ - Primary Keys (primary_keys) - [OPT] You can use this parameter to set primary keys if needed.
 
 Sample Configuration
 =============

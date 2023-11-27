@@ -48,20 +48,19 @@
       "description": "Use this parameter to define if you want to do an incremental load.",
       "propertyOrder": 5
     },
-            "primary_keys": {
-            "title": "Primary Keys",
-            "description": "Specify primary keys for the storage table.",
-            "type": "array",
-            "propertyOrder": 6,
-                "items": {
-      "type": "string"
-    },
-    "format": "select",
-    "options": {
-      "tags": true
-    },
-                  "uniqueItems": true
-
-            }
+    "primary_keys": {
+      "title": "Primary Keys",
+      "description": "Specify primary keys for the storage table.",
+      "type": "array",
+      "propertyOrder": 6,
+      "items": {
+        "type": "string"
+      },
+      "format": "select",
+      "options": {
+        "tags": true
+      },
+      "uniqueItems": true
+    }
   }
 }
