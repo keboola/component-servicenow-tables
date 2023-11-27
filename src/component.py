@@ -48,7 +48,7 @@ class Component(ComponentBase):
         sysparm_query = params.get(KEY_SYSPARM_QUERY)
         sysparm_fields = params.get(KEY_SYSPARM_FIELDS)
         sysparm_display_value = params.get(KEY_SYSPARM_DISPLAY_VALUE)
-        primary_key = params.get(KEY_PRIMARY_KEY, ["sys_id"])
+        primary_key = params.get(KEY_PRIMARY_KEY, [])
         increment = params.get(KEY_INCREMENT)
         if not increment:
             increment = False
