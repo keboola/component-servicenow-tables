@@ -49,7 +49,7 @@
       "propertyOrder": 5
     },
     "primary_keys": {
-      "title": "Primary Keys",
+      "title": "Primary Keys [Optional]",
       "description": "Specify primary keys for the storage table.",
       "type": "array",
       "propertyOrder": 6,
