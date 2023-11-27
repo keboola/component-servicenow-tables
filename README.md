@@ -29,7 +29,7 @@ For more information about querying please refer to [Table API documentation](ht
  - SysParm Fields (sysparm_fields) - [OPT] Using this parameter you can limit fetched fields. Please use comma separation.
  - SysParm Display Value - [OPT] Determines the type of data returned, either the actual values from the database or the display values of the fields.
  - Increment (increment) - [OPT] Set this parameter to true if you want to do incremental load.
- - Primary Keys (primary_keys) - [OPT] You can use this parameter to set primary keys if needed.
+ - Primary Keys (primary_keys) - [OPT] Use this parameter to set primary keys.
 
 Sample Configuration
 =============
