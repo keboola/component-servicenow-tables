@@ -48,10 +48,14 @@ class Component(ComponentBase):
         sysparm_query = params.get(KEY_SYSPARM_QUERY)
         sysparm_fields = params.get(KEY_SYSPARM_FIELDS)
         sysparm_display_value = params.get(KEY_SYSPARM_DISPLAY_VALUE)
-        primary_key = params.get(KEY_PRIMARY_KEY, [])
         increment = params.get(KEY_INCREMENT, False)
         threads = params.get(KEY_THREADS, 8)
         output_bucket = params.get(KEY_BUCKET, "ex-servicenow-tables")
+        primary_key = params.get(KEY_PRIMARY_KEY, [])
+        # backwards compatibility
+        if not primary_key:
+            if not sysparm_display_value:
+                primary_key = ["sys_id"]
 
         logging.info(f"Component will use {str(threads)} threads.")
 
