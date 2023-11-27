@@ -53,9 +53,8 @@ class Component(ComponentBase):
         output_bucket = params.get(KEY_BUCKET, "ex-servicenow-tables")
         primary_key = params.get(KEY_PRIMARY_KEY, [])
         # backwards compatibility
-        if not primary_key:
-            if not sysparm_display_value:
-                primary_key = ["sys_id"]
+        if not primary_key and not sysparm_display_value:
+            primary_key = ["sys_id"]
 
         logging.info(f"Component will use {str(threads)} threads.")
 
