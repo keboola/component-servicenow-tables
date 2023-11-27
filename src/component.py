@@ -15,6 +15,7 @@ KEY_SERVER = 'server'
 KEY_TABLE = 'table'
 KEY_SYSPARM_QUERY = 'sysparm_query'
 KEY_SYSPARM_FIELDS = 'sysparm_fields'
+KEY_SYSPARM_DISPLAY_VALUE = 'sysparm_display_value'
 KEY_THREADS = 'threads'
 KEY_INCREMENT = 'increment'
 KEY_BUCKET = 'output_bucket'
@@ -45,6 +46,7 @@ class Component(ComponentBase):
         server = params.get(KEY_SERVER)
         sysparm_query = params.get(KEY_SYSPARM_QUERY)
         sysparm_fields = params.get(KEY_SYSPARM_FIELDS)
+        sysparm_display_value = params.get(KEY_SYSPARM_DISPLAY_VALUE)
         increment = params.get(KEY_INCREMENT)
         if not increment:
             increment = False
@@ -75,6 +77,7 @@ class Component(ComponentBase):
             fetching_done = client.fetch_table(table=table,
                                                sysparm_query=sysparm_query,
                                                sysparm_fields=sysparm_fields,
+                                               sysparm_display_value=sysparm_display_value,
                                                table_def=table_def,
                                                temp_folder=temp_folder)
         except ServiceNowCredentialsError as e:

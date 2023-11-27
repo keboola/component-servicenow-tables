@@ -105,7 +105,7 @@ class ServiceNowClient:
 
         return result["stats"]["count"]
 
-    def fetch_table(self, table, sysparm_query, sysparm_fields, table_def, temp_folder) -> bool:
+    def fetch_table(self, table, sysparm_query, sysparm_fields, sysparm_display_value, table_def, temp_folder) -> bool:
         """
         Returns True if fetching was successful, otherwise returns False. This is to avoid mapping errors in Keboola
         storage.
@@ -130,6 +130,9 @@ class ServiceNowClient:
             params["sysparm_query"] = sysparm_query
         if sysparm_fields:
             params["sysparm_fields"] = sysparm_fields
+        if sysparm_display_value:
+            params["sysparm_display_value"] = sysparm_display_value
+
         sysparm_offset = 0
 
         for _ in range(iterations):

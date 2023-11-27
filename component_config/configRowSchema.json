@@ -23,12 +23,18 @@
       "description": "Using this parameter you can limit fetched fields. Please use comma separation.",
       "propertyOrder": 3
     },
+    "sysparm_display_value": {
+      "type": "string",
+      "title": "SysParm Display Value",
+      "description": "Determines the type of data returned, either the actual values from the database or the display values of the fields. Refer to [Table API documentation](https://docs.servicenow.com/bundle/vancouver-api-reference/page/integrate/inbound-rest/concept/c_TableAPI.html) for more info.",
+      "propertyOrder": 4
+    },
     "increment": {
       "type": "boolean",
       "title": "Increment",
       "default": false,
       "description": "Use this parameter to define if you want to do incremental load.",
-      "propertyOrder": 4
+      "propertyOrder": 5
     }
   }
 }
