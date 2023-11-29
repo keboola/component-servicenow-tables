@@ -14,21 +14,53 @@
     "sysparm_query": {
       "type": "string",
       "title": "SysParm Query",
-      "description": "Query which will be sent along with get table request. You can use [REST API Explorer](https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/task/t_GetStartedAccessExplorer.html) to try out API calls before setting up this component.",
+      "description": "Query which will be sent along with the get table request. You can use <a href='https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/task/t_GetStartedAccessExplorer.html'>REST API Explorer</a> to try out API calls before setting up this component.",
       "propertyOrder": 2
     },
     "sysparm_fields": {
       "type": "string",
-      "title": "SysParm Fields",
-      "description": "Using this parameter you can limit fetched fields. Please use comma separation.",
+      "title": "SysParm Fields [Optional]",
+      "description": "Using this parameter, you can limit fetched fields. Please use comma separation.",
       "propertyOrder": 3
+    },
+    "sysparm_display_value": {
+      "type": "string",
+      "title": "SysParm Display Value [Optional]",
+      "enum": [
+        "false",
+        "true",
+        "all"
+      ],
+      "options": {
+        "enum_titles": [
+          "false: Returns the actual values from the database.",
+          "true: Returns the display values for all fields.",
+          "all: Returns both actual and display values."
+        ]
+      },
+      "description": "Determines the type of data returned, either the actual values from the database or the display values of the fields. Refer to <a href='https://docs.servicenow.com/bundle/vancouver-api-reference/page/integrate/inbound-rest/concept/c_TableAPI.html'>Table API documentation</a> for more information.",
+      "propertyOrder": 4
     },
     "increment": {
       "type": "boolean",
       "title": "Increment",
       "default": false,
-      "description": "Use this parameter to define if you want to do incremental load.",
-      "propertyOrder": 4
+      "description": "Use this parameter to define if you want to do an incremental load.",
+      "propertyOrder": 5
+    },
+    "primary_keys": {
+      "title": "Primary Keys [Optional]",
+      "description": "Specify primary keys for the storage table.",
+      "type": "array",
+      "propertyOrder": 6,
+      "items": {
+        "type": "string"
+      },
+      "format": "select",
+      "options": {
+        "tags": true
+      },
+      "uniqueItems": true
     }
   }
 }

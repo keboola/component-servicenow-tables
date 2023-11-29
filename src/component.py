@@ -15,9 +15,11 @@ KEY_SERVER = 'server'
 KEY_TABLE = 'table'
 KEY_SYSPARM_QUERY = 'sysparm_query'
 KEY_SYSPARM_FIELDS = 'sysparm_fields'
+KEY_SYSPARM_DISPLAY_VALUE = 'sysparm_display_value'
 KEY_THREADS = 'threads'
 KEY_INCREMENT = 'increment'
 KEY_BUCKET = 'output_bucket'
+KEY_PRIMARY_KEY = 'primary_keys'
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
@@ -45,17 +47,14 @@ class Component(ComponentBase):
         server = params.get(KEY_SERVER)
         sysparm_query = params.get(KEY_SYSPARM_QUERY)
         sysparm_fields = params.get(KEY_SYSPARM_FIELDS)
-        increment = params.get(KEY_INCREMENT)
-        if not increment:
-            increment = False
-
-        threads = params.get(KEY_THREADS)
-        if not threads:
-            threads = 8
-
-        output_bucket = params.get(KEY_BUCKET)
-        if not output_bucket:
-            output_bucket = "ex-servicenow-tables"
+        sysparm_display_value = params.get(KEY_SYSPARM_DISPLAY_VALUE)
+        increment = params.get(KEY_INCREMENT, False)
+        threads = params.get(KEY_THREADS, 8)
+        output_bucket = params.get(KEY_BUCKET, "ex-servicenow-tables")
+        primary_key = params.get(KEY_PRIMARY_KEY, [])
+        # backwards compatibility
+        if not primary_key and not sysparm_display_value:
+            primary_key = ["sys_id"]
 
         logging.info(f"Component will use {str(threads)} threads.")
 
@@ -65,7 +64,7 @@ class Component(ComponentBase):
         client = ServiceNowClient(user=user, password=password, server=server, threads=threads)
 
         table_def = self.create_out_table_definition(table, destination=f'in.c-{output_bucket}.{table}',
-                                                     incremental=increment, primary_key=['sys_id'])
+                                                     incremental=increment, primary_key=primary_key)
 
         temp_folder = os.path.join(self.data_folder_path, "temp")
         if not os.path.exists(temp_folder):
@@ -75,6 +74,7 @@ class Component(ComponentBase):
             fetching_done = client.fetch_table(table=table,
                                                sysparm_query=sysparm_query,
                                                sysparm_fields=sysparm_fields,
+                                               sysparm_display_value=sysparm_display_value,
                                                table_def=table_def,
                                                temp_folder=temp_folder)
         except ServiceNowCredentialsError as e:
