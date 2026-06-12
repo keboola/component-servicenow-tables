@@ -1,1 +1,1 @@
-ServiceNow is a cloud-based workflow automation platform that enables enterprise organizations to improve operational efficiencies by streamlining and automating routine work tasks.
+Extracts ServiceNow tables.
