@@ -82,7 +82,15 @@ class Component(ComponentBase):
 
         if fetching_done:
             self.write_manifest(table_def)
-            self.handle_columns(table_def.full_path, self.statefile_columns)
+            try:
+                self.handle_columns(table_def.full_path, self.statefile_columns)
+            except csv.Error as e:
+                if "field larger than field limit" not in str(e):
+                    raise
+                raise UserException(
+                    f"Table '{table}' contains a value larger than the supported field size "
+                    f"({csv.field_size_limit()} characters). Use the 'SysParm Fields' (sysparm_fields) parameter "
+                    f"to exclude the oversized column(s) from the extraction.") from e
         else:
             try:
                 shutil.rmtree(table_def.full_path)
